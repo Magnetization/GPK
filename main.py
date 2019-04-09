@@ -107,7 +107,7 @@ def start_GUI():
 
 if __name__ == '__main__':
     listen = threading.Thread(target=listen_keyboard)
-    GUI = threading.Thread(target=start_GUI)
+    #GUI = threading.Thread(target=start_GUI)
     listen.start()
-    GUI.start()
+    #GUI.start()
     #first_monitor = threading.Thread(target=first_monitor_key)
