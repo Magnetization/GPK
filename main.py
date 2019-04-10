@@ -1,12 +1,13 @@
 	
 # -*- coding: utf-8 -*-
 import pythoncom
-import pyHook
+import PyHook3
 import time
 import os
 import tkinter as tk
 import time
 import threading
+import keyboard
 # def onKeyboardEvent(event):
 #   "处理键盘事件"
 #   if str(event.Key) == 'K':
@@ -38,6 +39,7 @@ class KeyBoardManager():
         if str(event.Key) == "Escape":
             print("Exit the program")
             print(raw_key_time)
+            keyboard.write("α", delay=0, restore_state_after=True, exact=None)
             os._exit(0)
         else:
             raw_key_time.append([str(event.Key), str(event.Time), 1])
@@ -54,7 +56,7 @@ class KeyBoardManager():
 
 def listen_keyboard():
     mykbmanager = KeyBoardManager()
-    hookmanager = pyHook.HookManager()
+    hookmanager = PyHook3.HookManager()
     hookmanager.KeyDown = mykbmanager.onKeyDown
     hookmanager.KeyUp = mykbmanager.onKeyUp
     hookmanager.HookKeyboard()
