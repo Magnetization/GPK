@@ -1,6 +1,7 @@
 import keyboard
 import os
 import threading
+import time
 from adjacent import is_adjacent, adjacent_rate
 import tkinter as tk
 from queue import Queue
@@ -8,50 +9,63 @@ global keyboard_stream
 '''
 [keyname, event, time]
 '''
-keyboard_stream = [[]]
+keyboard_stream = []
+keyboard_record = []
 keyboard_pressed = []
 previous_space_time = 0
-global started
 started = False
+start_time = 0
 def convert_to_ms(time):
     return int(time*1000) % 100000
 
 def do_press(event):
     # init press, start recording
-    keyboard_stream.append([event.name, 'press',convert_to_ms(event.time)])
-    keyboard_pressed.append(event.name)
+    #global started
+    global started
+    global start_time
+    if not started:
+        keyboard_stream.append([event.name, 'press',event.time])
+        keyboard_pressed.append(event.name)
+        if event.name == 'space' or event.name == 'backspace':
+            keyboard_stream.clear()
+            keyboard_pressed.clear()
 
-    #if len(keyboard_pressed) == 2 and is_adjacent(keyboard_pressed[0],keyboard_pressed[1]):
-    #if len(keyboard_pressed) >= 2 and is_adjacent(keyboard_pressed[-1],keyboard_pressed[-2]):
-    if event.name == 'space':
-        keyboard_pressed.clear()
-        # if not started:
-        #     keyboard_pressed.clear()
-        # if started:
-        #     keyboard.stop_recording
-    if len(keyboard_pressed) >= 3 and adjacent_rate(keyboard_pressed) > 2/3:
-        print("alert!",keyboard_pressed[-1][0],keyboard_pressed[-2][0])
-        #keyboard.press('backspace')
-        # global raw
-        # raw = Queue()
-        # keyboard.start_recording(recorded_events_queue=raw)
-        keyboard_pressed.clear()
+        if len(keyboard_pressed) >= 4 and adjacent_rate(keyboard_pressed) > 2/3:
+            print("alert!",keyboard_pressed[-1],keyboard_pressed[-2])
+            started = True
+            start_time = time.time() # mark the start time
+
+            stop_recording = threading.Timer(2.5, stop_and_process)
+            stop_recording.start()
+    elif started:
+        keyboard_record.append([event.name, 'press',event.time])
+
     #print(event.name, event.scan_code, event.time,"press")
 
 def do_release(event):
-    keyboard_stream.append([event.name, 'release', convert_to_ms(event.time)])
+    if not started:
+        keyboard_stream.append([event.name, 'release', event.time])
+    elif started:
+        keyboard_record.append([event.name, 'press',event.time])
     #print(event.name, event.scan_code, event.time,"release")
     #keyboard.write("α")
 
+def stop_and_process():
+    print("stop")
+
 def listen_keyboard():
-    #keyboard.add_hotkey('ctrl+q', quit) 
+    #keyboard.add_hotkey('ctrl+q', quit)
+    #global_timer = time.time()  # set initial timer
     keyboard.on_press(do_press)
     keyboard.on_release(do_release)
 
     keyboard.wait('esc')
-    #print(keyboard_stream)
+    print(keyboard_stream)
+    print()
     print(keyboard_pressed)
-    print(raw)
+    print()
+    print(keyboard_record)
+    #print(raw)
 
 def start_GUI():
     window = tk.Tk()
