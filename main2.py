@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 import keyboard
 import os
 import threading
@@ -31,7 +32,8 @@ def do_press(event):
             keyboard_pressed.clear()
         # for the judgement, add the time evaluation (only care about the press event)
         if len(keyboard_pressed) >= 4 and adjacent_rate(keyboard_pressed) > 2/3:
-            print("alert!",keyboard_pressed[-1],keyboard_pressed[-2])
+            #print("alert!",keyboard_pressed[-1],keyboard_pressed[-2])
+            print("alert!", keyboard_pressed)
             started = True
             start_time = time.time() # mark the start time
 
@@ -78,16 +80,17 @@ def start_GUI():
     window.title('gpk')   #窗口标题
     window.geometry('400x50')  #窗口尺寸
     
-    results = "1. 2. 3. 4. 5."
-    options = Label(window, text = results, width = 30, height = 2,anchor=NW,font=("Arial",30))
+    results = ["α","β","Ω","π","μ"]
+    options = "1." + results[0] + "  2." + results[1] + "  3." + results[2] + "  4." + results[3] + "  5." + results[4]
+    options = Label(window, text = options, width = 30, height = 2,anchor=NW,font=("Arial",30))
     options.pack()
     window.mainloop()
 
 if __name__ == '__main__':
-    # listen = threading.Thread(target=listen_keyboard)
+    listen = threading.Thread(target=listen_keyboard)
    
-    # listen.start()
-    stop_recording = threading.Thread(target=stop_and_process)
-    stop_recording.start()
+    listen.start()
+    # stop_recording = threading.Thread(target=stop_and_process)
+    # stop_recording.start()
 
     
