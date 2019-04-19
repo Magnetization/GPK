@@ -17,7 +17,7 @@ keyboard_pressed = []
 previous_space_time = 0
 started = False  # mark that a gesture is on
 processed = False  # mark it's in the process step
-
+finished = False
 start_time = 0
 def convert_to_ms(time):
     return int(time*1000) % 100000
@@ -27,6 +27,7 @@ def do_press(event):
     #global started
     global started
     global start_time
+    global finished
     if not started:
         
         keyboard_stream.append([event.name, 'press',event.time])
@@ -52,12 +53,14 @@ def do_press(event):
             if event.name in ['1','2','3','4','5','`'] and len(results) != 0:
                 if event.name == '`':
                     #pass
+                    finished = True
                     reset()
                 else:
                     for i in range(len(keyboard_pressed)):
                         keyboard.press('backspace')
                     keyboard.press('backspace')
                     keyboard.write(results[int(event.name) - 1])
+                    finished = True
                     reset()
     #print(event.name, event.scan_code, event.time,"press")
 
@@ -98,14 +101,16 @@ def reset():
     global processed
     started = False    
     processed = False
-    window.destroy() # can't use this, try another idea?
+    finished = False
+   
 
 def start_GUI():
     # entering the processing phrase
-    global window
-    global results
+  
+    
     window = Tk()
     # 进入消息循环
+    global results
     window.title('gpk')   #窗口标题
     window.geometry('400x50')  #窗口尺寸
     
@@ -119,17 +124,26 @@ def start_GUI():
     global processed
     processed = True 
 
+
+    close_thread = threading.Thread(target=detect_and_close)
+    close_thread.start()
     window.mainloop()
+
 
 def raise_window_up(window):
     window.attributes('-topmost', 1)
 def raise_window_down(window):
     window.attributes('-topmost', 0)
 
+def detect_and_close():
+    if finished:
+        window.destroy()
 
 if __name__ == '__main__':
+
+
     listen = threading.Thread(target=listen_keyboard)
-   
+
     listen.start()
     # stop_recording = threading.Thread(target=stop_and_process)
     # stop_recording.start()
