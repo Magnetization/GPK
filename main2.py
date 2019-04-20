@@ -7,6 +7,8 @@ from adjacent import is_adjacent, adjacent_rate
 from tkinter import *
 from queue import Queue
 from predict import predict
+from functools import partial
+import numpy as np
 global keyboard_stream
 '''
 [keyname, event, time]
@@ -18,7 +20,7 @@ previous_space_time = 0
 started = False  # mark that a gesture is on
 processed = False  # mark it's in the process step
 finished = False
-start_time = 0
+previous_time = 0
 def convert_to_ms(time):
     return int(time*1000) % 100000
 
@@ -26,21 +28,39 @@ def do_press(event):
     # init press, start recording
     #global started
     global started
-    global start_time
+    global previous_time
     global finished
     if not started:
-        
+        # record anyway
         keyboard_stream.append([event.name, 'press',event.time])
         keyboard_pressed.append(event.name)
         if event.name in ['space','backspace','enter']:
             keyboard_stream.clear()
             keyboard_pressed.clear()
+        else:
+            if previous_time == 0:
+                # mark the initial of the program
+                # then an key press event happen, store it in previous_time
+                previous_time = event.time
+            elif previous_time  != 0 :
+                # mark that a previous key has been pressed 
+                if event.time - previous_time  > 0.2:
+                    # print("previous",previous_time)
+                    # print("now", event.time)
+                    keyboard_stream.clear()
+                    keyboard_pressed.clear()
+                    keyboard_stream.append([event.name, 'press',event.time])
+                    keyboard_pressed.append(event.name)
+                    previous_time  = event.time
+                else:
+                    previous_time  = event.time
+            
             # for the judgement, add the time evaluation (only care about the press event)
         if len(keyboard_pressed) >= 4 and adjacent_rate(keyboard_pressed) > 2/3:
             #print("alert!",keyboard_pressed[-1],keyboard_pressed[-2])
             print("alert!", keyboard_pressed)
             started = True
-            start_time = time.time() # mark the start time
+            
 
             stop_recording = threading.Timer(2.0, stop_and_process)
             stop_recording.start()
@@ -54,6 +74,7 @@ def do_press(event):
                 if event.name == '`':
                     #pass
                     finished = True
+                    time.sleep(0.2)
                     reset()
                 else:
                     for i in range(len(keyboard_pressed)):
@@ -61,6 +82,7 @@ def do_press(event):
                     keyboard.press('backspace')
                     keyboard.write(results[int(event.name) - 1])
                     finished = True
+                    time.sleep(0.2)
                     reset()
     #print(event.name, event.scan_code, event.time,"press")
 
@@ -99,9 +121,11 @@ def reset():
     keyboard_record.clear()
     global started
     global processed
+    global finished
     started = False    
     processed = False
     finished = False
+    
    
 
 def start_GUI():
@@ -125,7 +149,7 @@ def start_GUI():
     processed = True 
 
 
-    close_thread = threading.Thread(target=detect_and_close)
+    close_thread = threading.Thread(target=partial(detect_and_close,window))
     close_thread.start()
     window.mainloop()
 
@@ -135,9 +159,10 @@ def raise_window_up(window):
 def raise_window_down(window):
     window.attributes('-topmost', 0)
 
-def detect_and_close():
-    if finished:
-        window.destroy()
+def detect_and_close(window):
+    while(1):
+        if finished:
+            window.destroy()
 
 if __name__ == '__main__':
 
