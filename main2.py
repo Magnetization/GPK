@@ -62,7 +62,7 @@ def do_press(event):
             started = True
             
 
-            stop_recording = threading.Timer(2.0, stop_and_process)
+            stop_recording = threading.Timer(1.5, stop_and_process)
             stop_recording.start()
         
     else:
@@ -73,6 +73,9 @@ def do_press(event):
             if event.name in ['1','2','3','4','5','`'] and len(results) != 0:
                 if event.name == '`':
                     #pass
+                    for i in range(len(keyboard_pressed)):
+                        keyboard.press('backspace')
+                    keyboard.press('backspace')
                     finished = True
                     time.sleep(0.2)
                     reset()
@@ -136,13 +139,13 @@ def start_GUI():
     # 进入消息循环
     global results
     window.title('gpk')   #窗口标题
-    window.geometry('400x50')  #窗口尺寸
+    window.geometry('450x60')  #窗口尺寸
     
     print("showing window")
     #results = ["α","β","Ω","π","μ"]
     results = predict(keyboard_pressed)
-    options = "1." + results[0] + "  2." + results[1] + "  3." + results[2] + "  4." + results[3] + "  5." + results[4]
-    options = Label(window, text = options, width = 30, height = 2,anchor=NW,font=("Arial",30))
+    options = "1." + results[0] + " 2." + results[1] + " 3." + results[2] + " 4." + results[3] + " 5." + results[4]
+    options = Label(window, text = options, width = 30, height = 2,anchor=NW,font=("Consolas",30))
     options.pack()
     raise_window_up(window)
     global processed
