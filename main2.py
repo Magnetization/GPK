@@ -21,6 +21,8 @@ started = False  # mark that a gesture is on
 processed = False  # mark it's in the process step
 finished = False
 previous_time = 0
+symbol_count = 0 # count how many symbols have been glided
+
 def convert_to_ms(time):
     return int(time*1000) % 100000
 
@@ -139,8 +141,10 @@ def start_GUI():
     # 进入消息循环
     global results
     window.title('gpk')   #窗口标题
-    window.geometry('450x60')  #窗口尺寸
     
+    #window.geometry('450x60')  #窗口尺寸
+    
+    center_window(window,450,60)
     print("showing window")
     #results = ["α","β","Ω","π","μ"]
     results = predict(keyboard_pressed)
@@ -159,8 +163,23 @@ def start_GUI():
 
 def raise_window_up(window):
     window.attributes('-topmost', 1)
-def raise_window_down(window):
-    window.attributes('-topmost', 0)
+
+
+
+def get_screen_size(window):
+    return window.winfo_screenwidth(),window.winfo_screenheight()
+ 
+def get_window_size(window):
+    return window.winfo_reqwidth(),window.winfo_reqheight()
+ 
+def center_window(window, width, height):
+    screenwidth = window.winfo_screenwidth()
+    screenheight = window.winfo_screenheight()
+    size = '%dx%d+%d+%d' % (width, height, (screenwidth - width)/2, (screenheight - height)/2)
+    print(size)
+    window.geometry(size)
+
+
 
 def detect_and_close(window):
     while(1):
