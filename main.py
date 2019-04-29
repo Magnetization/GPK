@@ -1,115 +1,198 @@
-	
-# -*- coding: utf-8 -*-
-import pythoncom
-import PyHook3
-import time
-import os
-import tkinter as tk
-import time
-import threading
+# -*- coding: utf-8 -*- 
 import keyboard
-# def onKeyboardEvent(event):
-#   "处理键盘事件"
-#   if str(event.Key) == 'K':
-#         os._exit(0)
-#   print('-' * 20 + 'Keyboard Begin' + '-' * 20 + '\n')
-#   print("Current Time:%s\n" % time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime()))
-#   print("MessageName:%s\n" % str(event.MessageName))
-#   print("Message:%d\n" % event.Message)
-#   print("Time:%d\n" % event.Time)
-#   print("Window:%s\n" % str(event.Window))
-#   print("WindowName:%s\n" % str(event.WindowName))
-#   print("Ascii_code: %d\n" % event.Ascii)
-#   print("Ascii_char:%s\n" % chr(event.Ascii))
-#   print("Key:%s\n" % str(event.Key))
-#   print('-' * 20 + 'Keyboard End' + '-' * 20 + '\n')
-#   return True
-global interval
-interbal = 220
-global raw_key_time
-raw_key_time=[[]]
+import os
+import threading
+import time
+from adjacent import is_adjacent, adjacent_rate
+from tkinter import *
+from queue import Queue
+from predict import predict
+from functools import partial
+import numpy as np
+global keyboard_stream
+'''
+[keyname, event, time]
+'''
+keyboard_stream = []
+keyboard_record = []
+keyboard_pressed = []
+previous_space_time = 0
+started = False  # mark that a gesture is on
+processed = False  # mark it's in the process step
+finished = False
+previous_time = 0
+symbol_count = 0 # count how many symbols have been glided
 
-class KeyBoardManager():
-    keyIsPressed = False
-    def onKeyDown(self,event):
-        if self.keyIsPressed:
-            return True
-        print(str(event.Key) + ' is pressed' + " Time:%d\n" % event.Time)
-        #print("Time:%d\n" % event.Time)
-        if str(event.Key) == "Escape":
-            print("Exit the program")
-            print(raw_key_time)
-            keyboard.write("α", delay=0, restore_state_after=True, exact=None)
-            os._exit(0)
+def convert_to_ms(time):
+    return int(time*1000) % 100000
+
+def do_press(event):
+    # init press, start recording
+    #global started
+    global started
+    global previous_time
+    global finished
+    if not started:
+        # record anyway
+        keyboard_stream.append([event.name, 'press',event.time])
+        keyboard_pressed.append(event.name)
+        if event.name in ['space','backspace','enter']:
+            keyboard_stream.clear()
+            keyboard_pressed.clear()
         else:
-            raw_key_time.append([str(event.Key), str(event.Time), 1])
-            # 1 stands for press down
-        self.keyIsPressed = True
-        return True
+            if previous_time == 0:
+                # mark the initial of the program
+                # then an key press event happen, store it in previous_time
+                previous_time = event.time
+            elif previous_time  != 0 :
+                # mark that a previous key has been pressed 
+                if event.time - previous_time  > 0.2:
+                    # print("previous",previous_time)
+                    # print("now", event.time)
+                    keyboard_stream.clear()
+                    keyboard_pressed.clear()
+                    keyboard_stream.append([event.name, 'press',event.time])
+                    keyboard_pressed.append(event.name)
+                    previous_time  = event.time
+                else:
+                    previous_time  = event.time
+            
+            # for the judgement, add the time evaluation (only care about the press event)
+        if len(keyboard_pressed) >= 4 and adjacent_rate(keyboard_pressed) > 2/3:
+            #print("alert!",keyboard_pressed[-1],keyboard_pressed[-2])
+            print("alert!", keyboard_pressed)
+            started = True
+            
 
-    def onKeyUp(self,event):
-        self.keyIsPressed = False
-        print(str(event.Key) + ' is released' + " Time:%d\n" % event.Time)
-        raw_key_time.append([str(event.Key), str(event.Time), 0])
-        # 0 stands for release up
-        return True
+            stop_recording = threading.Timer(1.5, stop_and_process)
+            stop_recording.start()
+        
+    else:
+        if not processed:
+            keyboard_record.append([event.name, 'press',event.time])
+            keyboard_pressed.append(event.name)
+        else:
+            if event.name in ['1','2','3','4','5','`'] and len(results) != 0:
+                if event.name == '`':
+                    #pass
+                    for i in range(len(keyboard_pressed)):
+                        keyboard.press('backspace')
+                    keyboard.press('backspace')
+                    finished = True
+                    time.sleep(0.2)
+                    reset()
+                else:
+                    for i in range(len(keyboard_pressed)):
+                        keyboard.press('backspace')
+                    keyboard.press('backspace')
+                    keyboard.write(results[int(event.name) - 1])
+                    finished = True
+                    time.sleep(0.2)
+                    reset()
+    #print(event.name, event.scan_code, event.time,"press")
+
+def do_release(event):
+    if not started:
+        keyboard_stream.append([event.name, 'release', event.time])
+    elif started:
+        keyboard_record.append([event.name, 'press',event.time])
+    #print(event.name, event.scan_code, event.time,"release")
+    #keyboard.write("α")
+
 
 def listen_keyboard():
-    mykbmanager = KeyBoardManager()
-    hookmanager = PyHook3.HookManager()
-    hookmanager.KeyDown = mykbmanager.onKeyDown
-    hookmanager.KeyUp = mykbmanager.onKeyUp
-    hookmanager.HookKeyboard()
-    pythoncom.PumpMessages()
+    #keyboard.add_hotkey('ctrl+q', quit)
+    #global_timer = time.time()  # set initial timer
+    keyboard.on_press(do_press)
+    keyboard.on_release(do_release)
 
-def calculate_adjacent_rate():
-    adjacent = 1
-    for i in range(1, len(raw_key_time)):
-        current_key = raw_key_time[i][0]
-        next_key = raw_key_time[i+1][0]
-        if is_adjacent(current_key, next_key):
-            adjacent += 1
-    return adjacent/(len(raw_key_time) - 1)
+    keyboard.wait('esc')
+    print(keyboard_stream)
+    print()
+    print(keyboard_pressed)
+    print()
+    print(keyboard_record)
+    #print(raw)
 
-# def is_adjacent(key1, key2):
+def stop_and_process():
+    print("stop")
+    GUI = threading.Thread(target=start_GUI)
+    GUI.start() 
 
-
-# def first_monitor_key():
-#     is_first_time = True
-#     init_length = 0
+def reset():
     
-#     while(1):
-#         if len(raw_key_time - 1) > init_length:
-#             if is_first_time:
-#                 # first time, need to monitor it all the time
-#                 adjacent_rate = calculate_adjacent_rate()
-#                 if adjacent_rate > 
-#                 is_first_time = False
-#             else :
-#                 if int(raw_key_time[-1][1]) - int(raw_key_time[-2][1]) > interval :
-#                     # show that there is a pause, indicate a stop, and the next input is gliding input
-#                     # clear the current raw key
-#                     raw_key_time = [[]]
-#                     # process and make a prediction
-#                     process_gliding()
-#                 else :
-#                     # still in normal typing mode
-#                     # do nothing
-#                     # pass
-        
-
+    keyboard_stream.clear()
+    keyboard_pressed.clear()
+    keyboard_record.clear()
+    global started
+    global processed
+    global finished
+    started = False    
+    processed = False
+    finished = False
+    
+   
 
 def start_GUI():
-    window = tk.Tk()
+    # entering the processing phrase
+  
+    
+    window = Tk()
     # 进入消息循环
+    global results
     window.title('gpk')   #窗口标题
-    window.geometry('200x100')  #窗口尺寸
+    
+    #window.geometry('450x60')  #窗口尺寸
+    
+    center_window(window,450,60)
+    print("showing window")
+    #results = ["α","β","Ω","π","μ"]
+    results = predict(keyboard_pressed)
+    options = "1." + results[0] + " 2." + results[1] + " 3." + results[2] + " 4." + results[3] + " 5." + results[4]
+    options = Label(window, text = options, width = 30, height = 2,anchor=NW,font=("Consolas",30))
+    options.pack()
+    raise_window_up(window)
+    global processed
+    processed = True 
 
+
+    close_thread = threading.Thread(target=partial(detect_and_close,window))
+    close_thread.start()
     window.mainloop()
 
+
+def raise_window_up(window):
+    window.attributes('-topmost', 1)
+
+
+
+def get_screen_size(window):
+    return window.winfo_screenwidth(),window.winfo_screenheight()
+ 
+def get_window_size(window):
+    return window.winfo_reqwidth(),window.winfo_reqheight()
+ 
+def center_window(window, width, height):
+    screenwidth = window.winfo_screenwidth()
+    screenheight = window.winfo_screenheight()
+    size = '%dx%d+%d+%d' % (width, height, (screenwidth - width)/2, (screenheight - height)/2)
+    print(size)
+    window.geometry(size)
+
+
+
+def detect_and_close(window):
+    while(1):
+        if finished:
+            window.destroy()
+
 if __name__ == '__main__':
+
+
     listen = threading.Thread(target=listen_keyboard)
-    #GUI = threading.Thread(target=start_GUI)
+
     listen.start()
-    #GUI.start()
-    #first_monitor = threading.Thread(target=first_monitor_key)
+    # stop_recording = threading.Thread(target=stop_and_process)
+    # stop_recording.start()
+
+    
