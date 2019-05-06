@@ -46,11 +46,12 @@ def do_press(event):
                 previous_time = event.time
             elif previous_time  != 0 :
                 # mark that a previous key has been pressed 
-                if event.time - previous_time  > 0.2:
+                if event.time - previous_time  > 0.3:
                     # print("previous",previous_time)
                     # print("now", event.time)
                     keyboard_stream.clear()
                     keyboard_pressed.clear()
+                    # too long, clear before store
                     keyboard_stream.append([event.name, 'press',event.time])
                     keyboard_pressed.append(event.name)
                     previous_time  = event.time

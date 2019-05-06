@@ -202,8 +202,6 @@ def encode_keys(str):
        "Space_" :60,
     }.get(str,"-1")    #默认返回值，可自设置
 
-def is_adjacent(key1,key2):
-
 
 def get_vectors():
     vector_list = [[]]
