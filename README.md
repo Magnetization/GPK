@@ -1,21 +1,39 @@
-# App for CHI'19 Student Research Competitation
-Code by Xiyuan He
-Collaborate with Zhuohao Zhang
-## Updated on 4/20
-Finish the frame.
-1. Including basic support for symbols
-2. No-switch input (according to my test, when telling gilding from normal input, it can achieve very high accuracy)
-3. Naive GUI
+# GPK (Gliding on Physical Keyboard)
+
+We introduce a novel typing technique for special symbols in the keyboard-only environment.
+With the technique, called GPK (Gliding on Physical Keyboard), users can literally draw on the keyboard to enter special symbols.
+
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+
+### Prerequisites and Installing
+
+What things you need to install and how to install them
+
+```
+git clone https://github.com/Magnetization/GPK-CHISRC
+cd GPK-CHISRC
+pip install fastdtw, keyboard==0.11.0
+python main.py
+```
+note: GPK may not work well on Linux or Mac OS due to [keyboard](https://github.com/boppreh/keyboard)
+
+## usage
+As GPK will not influence your normal typing, you cam simply glide on the keyboard whenever and wherever you want to. The recognition precedure will be triggred automatically. For example
+![alpha](/imgs/alpha.png)
+Here you can press number keys 1-5 to select from the symbols. If what you want is not in the list, you can press '`', which is the left key of number key '1', to cancel
+
+## Built With
+
+* [keyboard](https://github.com/boppreh/keyboard) - keyboard hook used
+* [fastDTW](https://github.com/slaypni/fastdtw) - Used to recognize symbols
 
 
+## Authors
 
-1. 弹窗的位置自适应
-    直接居中显示了
-2. 用户自定义
-3. 选中的时候高亮
-4. 机器学习
-5. 识别速度快一点  
-    可以直接修改时间 √ 已经修改得快了一点
-6. 根据用户输入频率调整概率
-    rerange the top 5
-    
+* **Xiyuan He** - *Initial work* - [Magnetization](https://github.com/Magnetization)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
