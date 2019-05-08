@@ -5,7 +5,7 @@ With the technique, called GPK (Gliding on Physical Keyboard), users can literal
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 
 ### Prerequisites and Installing
 
@@ -20,8 +20,9 @@ python main.py
 note: GPK may not work well on Linux or Mac OS due to [keyboard](https://github.com/boppreh/keyboard)
 
 ## usage
-As GPK will not influence your normal typing, you cam simply glide on the keyboard whenever and wherever you want to. The recognition precedure will be triggred automatically. For example
-![alpha](/imgs/alpha.png)
+As GPK will not influence your normal typing, you cam simply glide on the keyboard whenever and wherever you want to. The recognition precedure will be triggred automatically. For example <br>
+![alpha](/imgs/demo_alpha.gif)
+<br>
 Here you can press number keys 1-5 to select from the symbols. If what you want is not in the list, you can press '`', which is the left key of number key '1', to cancel
 
 ## Built With
