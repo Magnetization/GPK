@@ -12,8 +12,8 @@ These instructions will get you a copy of the project up and running on your loc
 What things you need to install and how to install them
 
 ```
-git clone https://github.com/Magnetization/GPK-CHISRC
-cd GPK-CHISRC
+git clone https://github.com/Magnetization/GPK
+cd GPK
 pip install fastdtw, keyboard==0.11.0
 python main.py
 ```
