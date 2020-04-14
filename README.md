@@ -21,7 +21,8 @@ note: GPK may not work well on Linux or Mac OS due to [keyboard](https://github.
 
 ## usage
 As GPK will not influence your normal typing, you cam simply glide on the keyboard whenever and wherever you want to. The recognition precedure will be triggred automatically. For example <br>
-![alpha](/imgs/demo_alpha.gif)
+![alpha](/imgs/demo.gif)
+![laptop](/imgs/demo_laptop.gif)
 <br>
 Here you can press number keys 1-5 to select from the symbols. If what you want is not in the list, you can press '`', which is the left key of number key '1', to cancel
 
